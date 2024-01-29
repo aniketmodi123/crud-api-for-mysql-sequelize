@@ -1,14 +1,49 @@
 // models/dataTable.js
-const Sequelize = require('sequelize');
+const {Sequelize, DataTypes} = require('sequelize');
 const sequelize = require('../config/database');
 
-const userModel= sequelize.define(
+const movieModel= sequelize.define(
   'dataTable',
   {
-    title: Sequelize.STRING,
-    desc: Sequelize.TEXT,
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    title: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    author: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    genre: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    rating: {
+      type: DataTypes.FLOAT,
+      allowNull: false
+    },
+    publicationYear: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')
+    }
   },
   { tableName: 'dataTable' }
 );
 
-module.exports = userModel;
+
+movieModel.sync({ force: false })
+
+
+module.exports = movieModel;
