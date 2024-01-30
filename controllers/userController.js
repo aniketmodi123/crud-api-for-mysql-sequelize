@@ -1,6 +1,7 @@
 const sequelize = require("../config/database");
-const { Sequelize, DataTypes } = require("sequelize");
+const { Sequelize, DataTypes, ValidationError } = require("sequelize");
 const dataTable = require("../models/dataTable");
+const { isDate } = require("lodash");
 
 //find all users in the database
 exports.getAllUsers = async (req, res) => {
@@ -65,7 +66,7 @@ exports.getUsersAfterShorting = async (req, res) => {
 */
 exports.getUsersAfterPagination = async (req, res) => {
   try {
-    const pageAsNumber = Number.parseInt(req.query.page);       //query is use to direct input some data we can use params but for that we have to insert data in url
+    const pageAsNumber = Number.parseInt(req.query.page); //query is use to direct input some data we can use params but for that we have to insert data in url
     //for query exp=> http://localhost:7000/pagination?page=3&size=6
     //for parmas exp=> http://localhost:7000/pagination/:page/:size
 
@@ -101,13 +102,30 @@ exports.getUsersAfterPagination = async (req, res) => {
 
 //create user in database
 exports.createUser = async (req, res) => {
+  var messages = {};
   try {
     const dta = req.body;
     const saveBlog = await dataTable.create(dta);
-    res.send("Data posted successfully");
+    // res.send("Data posted successfully");
+    res.status(500).json({ data: saveBlog });
   } catch (error) {
-    console.error("Error saving data:", error);
-    res.status(500).send("Internal Server Error");
+    let message;
+    error.errors.forEach((error) => {                                     // validation of right data format like date and rating is correct or not
+      if (error.validatorKey) {
+        if (error.validatorKey == "isDate") {
+          message = "please enter a valid date";
+          console.log(message);
+        } else if (error.validatorKey == "isFloat") {
+          message = "please enter a valid rating";
+        } else {
+          // Handle non-validation errors
+          console.error("Non-Validation Error:", error.message);
+        }
+        messages[error.path] = message;
+      }
+    });
+
+    res.status(500).json({ message: messages });
   }
 };
 
