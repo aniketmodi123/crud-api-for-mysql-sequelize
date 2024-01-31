@@ -1,9 +1,9 @@
-// models/dataTable.js
+// models/movieCastTable.js
 const {Sequelize, DataTypes} = require('sequelize');
 const sequelize = require('../config/database');
 
-const movieModel= sequelize.define(
-  'dataTable',
+const movieCastModel= sequelize.define(
+  'movieCastTable',
   {
     id: {
       type: DataTypes.INTEGER,
@@ -12,30 +12,16 @@ const movieModel= sequelize.define(
     },
     title: {
       type: DataTypes.STRING,
-      
+      primaryKey: true,
       allowNull: false
     },
-    author: {
+    leadActor: {
       type: DataTypes.STRING,
       allowNull: false
     },
-    genre: {
+    leadActress : {
       type: DataTypes.STRING,
       allowNull: false
-    },
-    rating: {
-      type: DataTypes.FLOAT,
-      allowNull: false,
-      validate:{                                                  //validation
-        isFloat: true
-      }
-    },
-    publicationYear: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      validate:{                                                  //validation
-        isDate: true
-      }
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -45,7 +31,6 @@ const movieModel= sequelize.define(
         return this.getDataValue('createdAt').toLocaleString();   //this convert it to string exp=> "1/29/2024, 5:48:25 PM"
       },
     },
-
     updatedAt: {
       type: DataTypes.DATE,
       defaultValue: Sequelize.fn('NOW'),
@@ -55,9 +40,9 @@ const movieModel= sequelize.define(
       },
     }
   },
-  { tableName: 'dataTable' }
+  { tableName: 'movieCastTable' }
 );
 
 
 
-module.exports = movieModel;
+module.exports = movieCastModel;

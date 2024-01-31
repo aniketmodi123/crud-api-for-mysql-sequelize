@@ -1,12 +1,39 @@
 const sequelize = require("../config/database");
-const { Sequelize, DataTypes, ValidationError } = require("sequelize");
-const dataTable = require("../models/dataTable");
+const { Sequelize, DataTypes, ValidationError, Association } = require("sequelize");
+const { dataTable, movieCastTable } = require('../dataTableJunction');
 const { isDate } = require("lodash");
+
+
+
+exports.getWelcomePage = async (req, res) => {
+  try {
+        res.send("welcome to aniket modi's api");
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    res.status(500).send("Internal Server Error");
+  }
+};
 
 //find all users in the database
 exports.getAllUsers = async (req, res) => {
   try {
     const alldata = await dataTable.findAll();
+    const genreCounts = await dataTable.findAll({
+      attributes: ['genre', [Sequelize.fn('COUNT', Sequelize.col('genre')), 'genreCount']],
+      group: ['genre'],
+      raw: true,
+    });
+    const genreCountsLength = "there are " + genreCounts.length + " genre";
+    res.json({alldata, genreCountsLength ,genreCounts});
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    res.status(500).send("Internal Server Error");
+  }
+};
+
+exports.getAllMoviesCasting = async (req, res) => {
+  try {
+    const alldata = await movieCastTable.findAll();
     res.json(alldata);
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -43,10 +70,10 @@ exports.getUsersByGenreAndRating = async (req, res) => {
   }
 };
 
-//shorting data table
-//it take to parameters where first is by which col. you want to short and second one is in which order ascending or descending
-//exp=> http://localhost:7000/shorting/rating/DESC
-
+/*shorting data table
+it take to parameters where first is by which col. you want to short and second one is in which order ascending or descending
+exp=> http://localhost:7000/movies/shorting/rating/DESC
+*/
 exports.getUsersAfterShorting = async (req, res) => {
   const shortBy = req.params.shortBy;
   const arrange = req.params.arrange;
@@ -67,8 +94,8 @@ exports.getUsersAfterShorting = async (req, res) => {
 exports.getUsersAfterPagination = async (req, res) => {
   try {
     const pageAsNumber = Number.parseInt(req.query.page); //query is use to direct input some data we can use params but for that we have to insert data in url
-    //for query exp=> http://localhost:7000/pagination?page=3&size=6
-    //for parmas exp=> http://localhost:7000/pagination/:page/:size
+    //for query exp=> http://localhost:7000/movies/pagination?page=3&size=6
+    //for parmas exp=> http://localhost:7000/movies/pagination/:page/:size
 
     const sizeAsNumber = Number.parseInt(req.query.size);
 
@@ -99,6 +126,44 @@ exports.getUsersAfterPagination = async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 };
+
+/*Association one to one
+def=>  in one to one association a table row data is connected to another table row data and throw associations we connect them to each other so we get the big data that is saprented into difrent table
+*/
+exports.getOneToOne = async (req, res) => {
+  try {
+    const alldata = await dataTable.findAll({
+      include: [
+        {
+          model: movieCastTable,
+          attributes: { exclude: ['createdAt', 'updatedAt', 'title', 'id'] }, // Exclude attributes here
+        },
+      ],
+    });
+
+    res.json(alldata);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    res.status(500).send("Internal Server Error");
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //create user in database
 exports.createUser = async (req, res) => {
@@ -162,3 +227,5 @@ exports.deleteUser = async (req, res) => {
   const alldata = await dataTable.findAll();
   res.json(alldata);
 };
+
+
