@@ -55,8 +55,11 @@ const movieModel= sequelize.define(
       },
     }
   },
-  { tableName: 'dataTable' }
-);
+  { tableName: 'dataTable',
+  paranoid: true,
+  deletedAt: "soft_delete"
+  
+});
 
 
 module.exports = movieModel;

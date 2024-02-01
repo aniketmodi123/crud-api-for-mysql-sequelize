@@ -1,13 +1,16 @@
 const sequelize = require("../config/database");
-const { Sequelize, DataTypes, ValidationError, Association } = require("sequelize");
-const { dataTable, movieCastTable } = require('../dataTableJunction');
+const {
+  Sequelize,
+  DataTypes,
+  ValidationError,
+  Association,
+} = require("sequelize");
+const { dataTable, movieCastTable } = require("../dataTableJunction");
 const { isDate } = require("lodash");
-
-
 
 exports.getWelcomePage = async (req, res) => {
   try {
-        res.send("welcome to aniket modi's api");
+    res.send("welcome to aniket modi's api");
   } catch (error) {
     console.error("Error fetching data:", error);
     res.status(500).send("Internal Server Error");
@@ -19,12 +22,15 @@ exports.getAllUsers = async (req, res) => {
   try {
     const alldata = await dataTable.findAll();
     const genreCounts = await dataTable.findAll({
-      attributes: ['genre', [Sequelize.fn('COUNT', Sequelize.col('genre')), 'genreCount']],
-      group: ['genre'],
+      attributes: [
+        "genre",
+        [Sequelize.fn("COUNT", Sequelize.col("genre")), "genreCount"],
+      ],
+      group: ["genre"],
       raw: true,
     });
     const genreCountsLength = "there are " + genreCounts.length + " genre";
-    res.json({alldata, genreCountsLength ,genreCounts});
+    res.json({ alldata, genreCountsLength, genreCounts });
   } catch (error) {
     console.error("Error fetching data:", error);
     res.status(500).send("Internal Server Error");
@@ -136,7 +142,7 @@ exports.getOneToOne = async (req, res) => {
       include: [
         {
           model: movieCastTable,
-          attributes: { exclude: ['createdAt', 'updatedAt', 'title', 'id'] }, // Exclude attributes here
+          attributes: { exclude: ["createdAt", "updatedAt", "title", "id"] }, // Exclude attributes here
         },
       ],
     });
@@ -148,19 +154,32 @@ exports.getOneToOne = async (req, res) => {
   }
 };
 
+// by soft delete findall method don't show the deleted data so this is for that
+exports.getDeletedData = async (req, res) => {
 
+  const deletedMovies = await dataTable.findAll({
+    paranoid: false, // Include soft-deleted records
+    where: {
+      soft_delete: { [Sequelize.Op.ne]: null }, // Filter only soft-deleted records
+    },
+  
+  });
+  res.json(deletedMovies);
 
+};
 
+// restoring deleted data 
+exports.restoredata = async (req, res) => {
+  const id = req.params.id;
+  await dataTable.restore({
+    where: {
+      id: id,
+    },
+  });
+  const alldata = await dataTable.findAll();
+  res.json(alldata);
 
-
-
-
-
-
-
-
-
-
+};
 
 
 
@@ -175,7 +194,8 @@ exports.createUser = async (req, res) => {
     res.status(500).json({ data: saveBlog });
   } catch (error) {
     let message;
-    error.errors.forEach((error) => {                                     // validation of right data format like date and rating is correct or not
+    error.errors.forEach((error) => {
+      // validation of right data format like date and rating is correct or not
       if (error.validatorKey) {
         if (error.validatorKey == "isDate") {
           message = "please enter a valid date";
@@ -189,7 +209,7 @@ exports.createUser = async (req, res) => {
         messages[error.path] = message;
       }
     });
-
+    
     res.status(500).json({ message: messages });
   }
 };
@@ -199,15 +219,15 @@ exports.updateUser = async (req, res) => {
   try {
     const id = req.params.id;
     const update_data = req.body;
-
+    
     const [updatedRowCount] = await dataTable.update(update_data, {
       where: { id: id },
     });
-
+    
     if (updatedRowCount === 0) {
       await dataTable.create(update_data);
     }
-
+    
     const alldata = await dataTable.findAll();
     res.json(alldata);
   } catch (error) {
@@ -217,15 +237,16 @@ exports.updateUser = async (req, res) => {
 };
 
 //delete user details in database through id
+//it has a parenoid facility so if i delete something through it item will be deleted and not show in findall function but in database it will store in softdeleted column 
 exports.deleteUser = async (req, res) => {
   const id = req.params.id;
   await dataTable.destroy({
     where: {
       id: id,
     },
+    // force: true                              //if i want to delete it permanently we have to use it
   });
   const alldata = await dataTable.findAll();
   res.json(alldata);
 };
-
 

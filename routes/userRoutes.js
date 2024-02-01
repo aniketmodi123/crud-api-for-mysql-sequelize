@@ -10,7 +10,9 @@ router.get('/movies/filter/:genre', userController.getUsersByGenre);            
 router.get('/movies/filter/:genre/:rating', userController.getUsersByGenreAndRating);              // get all users through genres
 router.get('/movies/shorting/:shortBy/:arrange', userController.getUsersAfterShorting);            // get all users after shorting
 router.get('/movies/pagination', userController.getUsersAfterPagination);                          // get users after pagination
-router.get('/movies/casting', userController.getOneToOne);                                         // get the casting details od movies from other table
+router.get('/movies/casting', userController.getOneToOne);                                         // get the casting details of movies from other table
+router.get('/movies/restore/:id', userController.restoredata);                                         // get the casting details of movies from other table
+router.get('/movies/deletedData', userController.getDeletedData);                                         // get the casting details of movies from other table
 
 
 
