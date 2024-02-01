@@ -19,10 +19,7 @@ const movieCastModel= sequelize.define(
       type: DataTypes.STRING,
       allowNull: false
     },
-    leadActress : {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
+    
     createdAt: {
       type: DataTypes.DATE,
       defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),

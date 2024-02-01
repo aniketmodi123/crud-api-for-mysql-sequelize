@@ -59,5 +59,4 @@ const movieModel= sequelize.define(
 );
 
 
-
 module.exports = movieModel;

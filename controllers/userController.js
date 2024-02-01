@@ -126,12 +126,12 @@ exports.getUsersAfterPagination = async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 };
-
 /*Association one to one
 def=>  in one to one association a table row data is connected to another table row data and throw associations we connect them to each other so we get the big data that is saprented into difrent table
 */
 exports.getOneToOne = async (req, res) => {
   try {
+    console.log("getOneToOne");
     const alldata = await dataTable.findAll({
       include: [
         {

@@ -6,7 +6,7 @@ const sequelize = new Sequelize(process.env.DATABASENAME, process.env.DBUSERNAME
   logging: false,
   dialect: 'mysql',
 });
-
+sequelize.sync({force:false});
 sequelize
   .authenticate()
   .then(() => {
