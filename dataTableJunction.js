@@ -21,11 +21,12 @@ const movieCastTable = require("./models/movieCastTable");
 //   });
 
 
-  // dataTable.hasOne(movieCastTable, { foreignKey: 'title', sourceKey: 'title' });                //one to one relationship 
-  // movieCastTable.belongsTo(dataTable, { foreignKey: 'title', targetKey: 'title' });
+  dataTable.hasOne(movieCastTable, { foreignKey: 'title', sourceKey: 'title' });                //one to one relationship 
+  movieCastTable.belongsTo(dataTable, { foreignKey: 'title', targetKey: 'title' });
 
-  // dataTable.hasOne(movieCastTable, { foreignKey: 'title', sourceKey: 'title' });                //one to many relationship 
+  // dataTable.hasMany(movieCastTable, { foreignKey: 'title', sourceKey: 'title' });                //one to many relationship 
   // movieCastTable.belongsTo(dataTable, { foreignKey: 'title', targetKey: 'title' });
+  
 module.exports = {
     dataTable,
     movieCastTable,

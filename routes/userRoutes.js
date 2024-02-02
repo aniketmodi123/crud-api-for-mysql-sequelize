@@ -17,6 +17,7 @@ router.get('/movies/deletedData', userController.getDeletedData);               
 
 
 router.post('/movies/add', userController.createUser);                                             // add user
+router.post('/movies/movieandcasting', userController.createMoiveAndCasting);                                             // add user
 
 
 

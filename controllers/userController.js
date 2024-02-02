@@ -214,6 +214,57 @@ exports.createUser = async (req, res) => {
   }
 };
 
+
+//create movie and casting in database at same time
+exports.createMoiveAndCasting = async (req, res) => {
+  var messages = {};
+  try {
+    const dta = req.body;
+    let castdata;
+    // console.log(dta.movieCastTables[0]);
+    const saveBlog = await dataTable.create(dta);
+    
+    if(saveBlog && saveBlog.id) {
+      castdata = await movieCastTable.create(dta.movieCastTables[0])
+    };
+    if (castdata && castdata.id) {
+      return res.status(201).json({
+        success: true,
+        message: 'Movie and casting data created successfully',
+        data: {
+          movie: saveBlog,
+          casting: castdata,
+        },
+      });
+    }
+    
+  } catch (error) {
+    let message;
+    if (error.errors) {
+      error.errors.forEach((error) => {
+        // validation of right data format like date and rating is correct or not
+        if (error.validatorKey) {
+          if (error.validatorKey == 'isDate') {
+            message = 'please enter a valid date';
+            console.log(message);
+          } else if (error.validatorKey == 'isFloat') {
+            message = 'please enter a valid rating';
+          } else {
+            // Handle non-validation errors
+            console.error('Non-Validation Error:', error.message);
+          }
+          messages[error.path] = message;
+        }
+      });
+    }
+
+
+    
+    
+    res.status(500).json({ message: messages });
+  }
+};
+
 //update user details in database  through id
 exports.updateUser = async (req, res) => {
   try {
