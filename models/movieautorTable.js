@@ -1,25 +1,22 @@
-// models/movieCastTable.js
 const {Sequelize, DataTypes} = require('sequelize');
 const sequelize = require('../config/database');
 
-const movieCastModel= sequelize.define(
-  'movieCastTable',
+const movieAuthorModel= sequelize.define(
+  'movieauthortable',
   {
-    actorid: {
+    authorid: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true
     },
     title: {
       type: DataTypes.STRING,
-      primaryKey: true,
       allowNull: false
     },
-    leadActor: {
-      type: DataTypes.STRING,
-      allowNull: false
+    author: {
+        type: DataTypes.STRING,
+        allowNull: false
     },
-    
     createdAt: {
       type: DataTypes.DATE,
       defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
@@ -28,6 +25,7 @@ const movieCastModel= sequelize.define(
         return this.getDataValue('createdAt').toLocaleString();   //this convert it to string exp=> "1/29/2024, 5:48:25 PM"
       },
     },
+
     updatedAt: {
       type: DataTypes.DATE,
       defaultValue: Sequelize.fn('NOW'),
@@ -37,11 +35,11 @@ const movieCastModel= sequelize.define(
       },
     }
   },
-  { tableName: 'movieCastTable',
+  { tableName: 'movieauthortable',
   paranoid: true,
-  deletedAt: "soft_delete" }
-);
+  deletedAt: "soft_delete"
+  
+});
 
 
-
-module.exports = movieCastModel;
+module.exports = movieAuthorModel;

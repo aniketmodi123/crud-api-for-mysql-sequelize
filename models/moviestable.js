@@ -1,11 +1,11 @@
-// models/dataTable.js
+// models/moviestable.js
 const {Sequelize, DataTypes} = require('sequelize');
 const sequelize = require('../config/database');
 
 const movieModel= sequelize.define(
-  'dataTable',
+  'moviestable',
   {
-    id: {
+    movieid: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true
@@ -15,10 +15,7 @@ const movieModel= sequelize.define(
       
       allowNull: false
     },
-    author: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
+
     genre: {
       type: DataTypes.STRING,
       allowNull: false
@@ -55,7 +52,7 @@ const movieModel= sequelize.define(
       },
     }
   },
-  { tableName: 'dataTable',
+  { tableName: 'moviestable',
   paranoid: true,
   deletedAt: "soft_delete"
   

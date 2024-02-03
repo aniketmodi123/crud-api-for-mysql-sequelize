@@ -1,0 +1,1 @@
+i am using "note=="  to remember some imortant things so if i get some mistake it will help me.
