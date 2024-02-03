@@ -10,13 +10,13 @@ router.get('/movies/filter/:genre', apiController.getMoviesByGenre);            
 router.get('/movies/filter/:genre/:rating', apiController.getMoviesByGenreAndRating);              // get all Movies through genres
 router.get('/movies/shorting/:shortBy/:arrange', apiController.getMoviesAfterShorting);            // get all Movies after shorting
 router.get('/movies/pagination', apiController.getMoviesAfterPagination);                          // get Movies after pagination
-router.get('/movies/casting', apiController.getOneToOne);                                         // get the casting details of movies from other table
+router.get('/movies/casting', apiController.getOneToMany);                                         // get the casting details of movies from other table
 router.get('/movies/restore/:id', apiController.restoredata);                                         // get the casting details of movies from other table
 router.get('/movies/deletedData', apiController.getDeletedData);                                         // get the casting details of movies from other table
 
 
 router.post('/movies/add', apiController.createUser);                                             // add user
-router.post('/movies/movieandcasting', apiController.createMoiveAndCasting);                                             // add user
+router.post('/movies/movieandsubtables', apiController.createMoiveAndSubTabels);                                             // add user
 
 
 

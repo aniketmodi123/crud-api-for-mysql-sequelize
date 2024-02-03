@@ -137,10 +137,10 @@ exports.getMoviesAfterPagination = async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 };
-/*Association one to one
+/*Association one to many
 def=>  in one to one association a table row data is connected to another table row data and throw associations we connect them to each other so we get the big data that is saprented into difrent table
 */
-exports.getOneToOne = async (req, res) => {
+exports.getOneToMany = async (req, res) => {
   try {
     const alldata = await moviestable.findAll({
       // use it if movie -> moviecasttable
@@ -259,7 +259,7 @@ exports.createUser = async (req, res) => {
 };
 
 //create movie and casting in database at same time
-exports.createMoiveAndCasting = async (req, res) => {
+exports.createMoiveAndSubTabels = async (req, res) => {
   var messages = {};
   try {
     const dta = req.body;
