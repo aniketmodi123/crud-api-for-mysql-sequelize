@@ -5,13 +5,19 @@ const {
   ValidationError,
   Association,
 } = require("sequelize");
+
 const {
   moviestable,
   movieCastTable,
   movieAuthorTable,
-  storemovieCastTable,
 } = require("../moviestableJunction");
-const { isDate } = require("lodash");
+
+const {destroyData} = require('./crudFunction');
+
+
+
+
+
 
 exports.getWelcomePage = async (req, res) => {
   try {
@@ -138,7 +144,7 @@ exports.getMoviesAfterPagination = async (req, res) => {
   }
 };
 /*Association one to many
-def=>  in one to one association a table row data is connected to another table row data and throw associations we connect them to each other so we get the big data that is saprented into difrent table
+note ==  in one to one association a table row data is connected to another table row data and throw associations we connect them to each other so we get the big data that is saprented into difrent table
 */
 exports.getOneToMany = async (req, res) => {
   try {
@@ -152,37 +158,26 @@ exports.getOneToMany = async (req, res) => {
           //where: {actorid:40},
           model: movieCastTable,
           attributes: {
-            exclude: [
-              "createdAt",
-              "updatedAt",
-              "title",
-              "soft_delete",
-            ],
+            exclude: ["createdAt", "updatedAt", "title", "soft_delete"],
           }, // Exclude attributes here
         },
         {
           //where: {authorid:40},
           model: movieAuthorTable,
           attributes: {
-            exclude: [
-              "createdAt",
-              "updatedAt",
-              "title",
-              "soft_delete",
-            ],
+            exclude: ["createdAt", "updatedAt", "title", "soft_delete"],
           }, // Exclude attributes here
         },
       ],
     });
 
-/*
+    /*
 note ==   remember in creating data id will auto increment and all tables are sapreate so some time all table get differnt id number but its not a big deal all tables are association with each other with common detail so it will never lose it
 */
 
+    // use it if movie -> moviecasttable -> movieauthortable
 
-     // use it if movie -> moviecasttable -> movieauthortable
-
-    // const alldata = await moviestable.findAll({         
+    // const alldata = await moviestable.findAll({
     //   include: [
     //     {
     //       model: movieCastTable,
@@ -261,12 +256,13 @@ exports.createUser = async (req, res) => {
 //create movie and casting in database at same time
 exports.createMoiveAndSubTabels = async (req, res) => {
   var messages = {};
+  var t = await sequelize.transaction();
+  const dta = req.body;
+  // console.log(dta);
   try {
-    const dta = req.body;
+    //only one create function can create the data
 
-    let castdata;
-    // console.log(dta);
-    const saveBlog = await moviestable.create(dta, {
+    /*const saveBlog = await moviestable.create(dta, {
       include: [
         {
           model: movieCastTable,
@@ -275,28 +271,52 @@ exports.createMoiveAndSubTabels = async (req, res) => {
           model: movieAuthorTable,
         },
       ],
-    });
-
-    //const saveBlog = await moviestable.create(dta);
-    // if(saveBlog && saveBlog.id) {
-    //   castdata = await movieCastTable.create(dta.movieCastTables[0])
-    // };
-    // if (castdata && castdata.id) {
-    // return res.status(201).json({
-    //   success: true,
-    //   message: 'Movie and casting data created successfully',
-    //   data: {
-    //     movie: saveBlog,
-    //     casting: castdata,
-    //   },
-    // }
-    // );
-    // }
+    }
+    );
+    await t.commit();
     return res.status(201).json({
       success: true,
       message: "Movie and casting data created successfully",
       data: saveBlog,
-    });
+    });*/
+
+    
+    //multipul function is needed to create the data also including transaction
+    //note == in transaction when we input multipule table at same time some time one of them can create the data successfully in this case incomplete information will insert so we use transaction so if this case will happen all the data will be destroyed or no data will enter 
+    let castdata = {};
+    let authordata = {};
+    const saveBlog = await moviestable.create(dta);
+
+    try {
+      if (saveBlog && saveBlog.movieid) {
+        castdata.data = await movieCastTable.create(dta.movieCastTables);
+        castdata.id = castdata.data.actorid
+        
+        authordata.data = await movieAuthorTable.create(dta.movieauthortables);
+        authordata.id = authordata.data.authorid
+      }
+      
+      await t.commit();
+
+      if (castdata && castdata.actorid && authordata && authordata.authorid) {
+        return res.status(201).json({
+          success: true,
+          message: "Movie casting and author data created successfully",
+          data: {
+            movie: saveBlog,
+            casting: castdata.data,
+            authordeatail: authordata.data,
+          },
+        });
+      }
+    } catch (error) {
+        await t.rollback();
+
+       
+        await destroyData(moviestable, { movieid: saveBlog.movieid }, true);
+        await destroyData(movieCastTable, { actorid: castdata.id }, true);
+        await destroyData(movieAuthorTable, { authorid: authordata.id }, true);     
+    }
   } catch (error) {
     let message;
     if (error.errors) {
@@ -320,6 +340,68 @@ exports.createMoiveAndSubTabels = async (req, res) => {
     res.status(500).json({ message: messages });
   }
 };
+// //create movie and casting in database at same time
+// exports.createMoiveAndSubTabels = async (req, res) => {
+//   var messages = {};
+//   try {
+//     const dta = req.body;
+
+//     let castdata;
+//     // console.log(dta);
+//     const saveBlog = await moviestable.create(dta, {
+//       include: [
+//         {
+//           model: movieCastTable,
+//         },
+//         {
+//           model: movieAuthorTable,
+//         },
+//       ],
+//     });
+
+//     //const saveBlog = await moviestable.create(dta);
+//     // if(saveBlog && saveBlog.id) {
+//     //   castdata = await movieCastTable.create(dta.movieCastTables[0])
+//     // };
+//     // if (castdata && castdata.id) {
+//     // return res.status(201).json({
+//     //   success: true,
+//     //   message: 'Movie and casting data created successfully',
+//     //   data: {
+//     //     movie: saveBlog,
+//     //     casting: castdata,
+//     //   },
+//     // }
+//     // );
+//     // }
+//     return res.status(201).json({
+//       success: true,
+//       message: "Movie and casting data created successfully",
+//       data: saveBlog,
+//     });
+//   } catch (error) {
+//     let message;
+//     if (error.errors) {
+//       error.errors.forEach((error) => {
+//         // validation of right data format like date and rating is correct or not
+//         if (error.validatorKey) {
+//           if (error.validatorKey == "isDate") {
+//             message = "please enter a valid date";
+//             console.log(message);
+//           } else if (error.validatorKey == "isFloat") {
+//             message = "please enter a valid rating";
+//           } else {
+//             // Handle non-validation errors
+//             console.error("Non-Validation Error:", error.message);
+//           }
+//           messages[error.path] = message;
+//         }
+//       });
+//     }
+
+//     res.status(500).json({ message: messages });
+//   }
+// };
 
 //update user details in database  through id
 exports.updateUser = async (req, res) => {
@@ -347,12 +429,7 @@ exports.updateUser = async (req, res) => {
 //it has a parenoid facility so if i delete something through it item will be deleted and not show in findall function but in database it will store in softdeleted column
 exports.deleteUser = async (req, res) => {
   const id = req.params.id;
-  await moviestable.destroy({
-    where: {
-      id: id,
-    },
-    // force: true                              //if i want to delete it permanently we have to use it
-  });
+  await destroyData(moviestable, { movieid: id });
   const alldata = await moviestable.findAll();
   res.json(alldata);
 };
