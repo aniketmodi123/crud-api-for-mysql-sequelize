@@ -2,9 +2,13 @@ const sequelize = require("../config/database");
 const {
   Sequelize,
   DataTypes,
+  QueryTypes,
   ValidationError,
   Association,
 } = require("sequelize");
+
+const fs = require('fs');
+const json2csv = require('json2csv').parse;
 
 const {
   moviestable,
@@ -12,12 +16,7 @@ const {
   movieAuthorTable,
 } = require("../moviestableJunction");
 
-const {destroyData} = require('./crudFunction');
-
-
-
-
-
+const { destroyData } = require("./crudFunction");
 
 exports.getWelcomePage = async (req, res) => {
   try {
@@ -32,20 +31,36 @@ exports.getWelcomePage = async (req, res) => {
 exports.getAllMovies = async (req, res) => {
   try {
     const alldata = await moviestable.findAll();
-    const genreCounts = await moviestable.findAll({
-      attributes: [
-        "genre",
-        [Sequelize.fn("COUNT", Sequelize.col("genre")), "genreCount"],
-      ],
-      group: ["genre"],
-      raw: true,
-    });
-    const genreCountsLength = "there are " + genreCounts.length + " genre";
-    res.json({ alldata, genreCountsLength, genreCounts });
+    
+
+    const { dataValues } = moviestable;
+    console.log(dataValues);
+
+
+const csvData = json2csv(alldata, {header: true});
+fs.writeFileSync("output.csv", csvData, "utf8");
+
+    res.json(alldata);
   } catch (error) {
     console.error("Error fetching data:", error);
     res.status(500).send("Internal Server Error");
   }
+  // try {
+  //   const alldata = await moviestable.findAll();
+  //   const genreCounts = await moviestable.findAll({
+  //     attributes: [
+  //       "genre",
+  //       [Sequelize.fn("COUNT", Sequelize.col("genre")), "genreCount"],
+  //     ],
+  //     group: ["genre"],
+  //     raw: true,
+  //   });
+  //   const genreCountsLength = "there are " + genreCounts.length + " genre";
+  //   res.json({ alldata, genreCountsLength, genreCounts });
+  // } catch (error) {
+  //   console.error("Error fetching data:", error);
+  //   res.status(500).send("Internal Server Error");
+  // }
 };
 
 exports.getAllMoviesCasting = async (req, res) => {
@@ -216,7 +231,7 @@ exports.restoredata = async (req, res) => {
   const id = req.params.id;
   await moviestable.restore({
     where: {
-      id: id,
+      movieid: id,
     },
   });
   const alldata = await moviestable.findAll();
@@ -280,9 +295,8 @@ exports.createMoiveAndSubTabels = async (req, res) => {
       data: saveBlog,
     });*/
 
-    
     //multipul function is needed to create the data also including transaction
-    //note == in transaction when we input multipule table at same time some time one of them can create the data successfully in this case incomplete information will insert so we use transaction so if this case will happen all the data will be destroyed or no data will enter 
+    //note == in transaction when we input multipule table at same time some time one of them can create the data successfully in this case incomplete information will insert so we use transaction so if this case will happen all the data will be destroyed or no data will enter
     let castdata = {};
     let authordata = {};
     const saveBlog = await moviestable.create(dta);
@@ -290,12 +304,12 @@ exports.createMoiveAndSubTabels = async (req, res) => {
     try {
       if (saveBlog && saveBlog.movieid) {
         castdata.data = await movieCastTable.create(dta.movieCastTables);
-        castdata.id = castdata.data.actorid
-        
+        castdata.id = castdata.data.actorid;
+
         authordata.data = await movieAuthorTable.create(dta.movieauthortables);
-        authordata.id = authordata.data.authorid
+        authordata.id = authordata.data.authorid;
       }
-      
+
       await t.commit();
 
       if (castdata && castdata.actorid && authordata && authordata.authorid) {
@@ -310,12 +324,11 @@ exports.createMoiveAndSubTabels = async (req, res) => {
         });
       }
     } catch (error) {
-        await t.rollback();
+      await t.rollback();
 
-       
-        await destroyData(moviestable, { movieid: saveBlog.movieid }, true);
-        await destroyData(movieCastTable, { actorid: castdata.id }, true);
-        await destroyData(movieAuthorTable, { authorid: authordata.id }, true);     
+      await destroyData(moviestable, { movieid: saveBlog.movieid }, true);
+      await destroyData(movieCastTable, { actorid: castdata.id }, true);
+      await destroyData(movieAuthorTable, { authorid: authordata.id }, true);
     }
   } catch (error) {
     let message;
